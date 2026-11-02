@@ -37,7 +37,7 @@ def render_history_page() -> None:
         for record in records
     ]
     frame = pd.DataFrame(rows)
-    st.dataframe(frame, use_container_width=True, hide_index=True)
+    st.dataframe(frame, width="stretch", hide_index=True)
     st.download_button(
         "Export CSV",
         data=frame.to_csv(index=False).encode("utf-8"),
