@@ -1,6 +1,6 @@
 # Recruiter Outreach Tool
 
-A local Streamlit app for sending personalized, one-at-a-time recruiter outreach emails through the Gmail API. It stores templates, settings, and confirmed send history in SQLite.
+A local Streamlit app for sending personalized, one-at-a-time recruiter outreach emails through the Gmail API. It stores templates, settings, and confirmed send history in lightweight local text files.
 
 ## Features
 
@@ -9,7 +9,7 @@ A local Streamlit app for sending personalized, one-at-a-time recruiter outreach
 - Plain-text and HTML MIME alternatives with clickable links.
 - Default PDF resume plus a per-email replacement picker.
 - Editable starter templates for recruiter, founder, and follow-up outreach.
-- SQLite send records with status, Gmail message ID, and error details for local auditability.
+- Text-file send records with status, Gmail message ID, and error details for local auditability.
 - No bulk sending, open tracking, reply tracking, or automatic sequences.
 
 ## 1. Create a virtual environment
@@ -53,7 +53,7 @@ Copy `.env.example` to `.env` if you want to override defaults:
 Copy-Item .env.example .env
 ```
 
-The defaults use `data/outreach.db`, `uploads/`, `credentials.json`, and `token.json` in this project directory. `.env`, OAuth credentials, tokens, databases, and uploaded files are ignored by Git.
+The defaults use `uploads/`, `credentials.json`, and `token.json` in this project directory. Runtime data is stored in the ignored root-level files `email_templates.txt`, `app_settings.txt`, and `outreach_history.txt`. `.env`, OAuth credentials, tokens, local data files, and uploaded files are ignored by Git.
 
 ## 5. Run the app
 
@@ -73,7 +73,7 @@ The app opens on **Compose**. Use **Settings → Connect Gmail** for the first O
 4. Open **Compose**, enter your own email address, and choose a starter template.
 5. Review the rendered preview and attachment name.
 6. Click **Send email** once and wait for Gmail confirmation.
-7. The confirmed `sent` status and Gmail message ID are saved locally in `data/outreach.db`.
+7. The confirmed `sent` status and Gmail message ID are saved locally in `outreach_history.txt`.
 
 The app does not automatically retry a timed-out Gmail request because the outcome could be unknown and a retry might duplicate the email.
 
@@ -102,7 +102,7 @@ python -m pytest -q
 python -m compileall -q .
 ```
 
-SQLite tables and the three starter templates are initialized automatically on app startup.
+The three starter templates and local text files are initialized automatically on app startup.
 
 ## Troubleshooting
 
