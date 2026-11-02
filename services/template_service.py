@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from html import escape
+import re
 
 from jinja2 import ChainableUndefined, Environment
 
@@ -13,6 +14,7 @@ HTML_ENVIRONMENT = Environment(
     undefined=ChainableUndefined,
     autoescape=False,
 )
+URL_PATTERN = re.compile(r"(https?://[^\s<]+)")
 
 
 def render_text(template_text: str, values: Mapping[str, object]) -> str:
@@ -31,7 +33,11 @@ def render_html(template_text: str, values: Mapping[str, object]) -> str:
     rendered = HTML_ENVIRONMENT.from_string(template_text).render(**values).strip()
     if "<" in rendered and ">" in rendered:
         return rendered
-    paragraphs = [escape(part.strip()).replace("\n", "<br>\n") for part in rendered.split("\n\n") if part.strip()]
+    paragraphs = []
+    for part in rendered.split("\n\n"):
+        if part.strip():
+            safe_part = escape(part.strip()).replace("\n", "<br>\n")
+            paragraphs.append(URL_PATTERN.sub(r'<a href="\1">\1</a>', safe_part))
     return "\n\n".join(f"<p>{paragraph}</p>" for paragraph in paragraphs)
 
 
