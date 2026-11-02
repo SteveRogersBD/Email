@@ -9,7 +9,7 @@ A local Streamlit app for sending personalized, one-at-a-time recruiter outreach
 - Plain-text and HTML MIME alternatives with clickable links.
 - Default PDF resume plus a per-email replacement picker.
 - Editable starter templates for recruiter, founder, and follow-up outreach.
-- SQLite history with status, Gmail message ID, error details, search, and CSV export.
+- SQLite send records with status, Gmail message ID, and error details for local auditability.
 - No bulk sending, open tracking, reply tracking, or automatic sequences.
 
 ## 1. Create a virtual environment
@@ -73,7 +73,7 @@ The app opens on **Compose**. Use **Settings → Connect Gmail** for the first O
 4. Open **Compose**, enter your own email address, and choose a starter template.
 5. Review the rendered preview and attachment name.
 6. Click **Send email** once and wait for Gmail confirmation.
-7. Check **History** for the confirmed `sent` status and Gmail message ID.
+7. The confirmed `sent` status and Gmail message ID are saved locally in `data/outreach.db`.
 
 The app does not automatically retry a timed-out Gmail request because the outcome could be unknown and a retry might duplicate the email.
 
