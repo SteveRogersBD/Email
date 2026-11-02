@@ -13,20 +13,11 @@ ROOT_DIR = Path(__file__).resolve().parent
 load_dotenv(ROOT_DIR / ".env")
 
 
-def _database_url() -> str:
-    configured = os.getenv("DATABASE_URL", "sqlite:///data/outreach.db")
-    if configured.startswith("sqlite:///") and not configured.startswith("sqlite:////"):
-        relative_path = configured.removeprefix("sqlite:///")
-        return f"sqlite:///{(ROOT_DIR / relative_path).resolve()}"
-    return configured
-
-
 @dataclass(frozen=True)
 class Settings:
     root_dir: Path = ROOT_DIR
     data_dir: Path = ROOT_DIR / os.getenv("APP_DATA_DIR", "data")
     upload_dir: Path = ROOT_DIR / os.getenv("UPLOAD_DIR", "uploads")
-    database_url: str = _database_url()
     templates_file: Path = ROOT_DIR / "email_templates.txt"
     settings_file: Path = ROOT_DIR / "app_settings.txt"
     history_file: Path = ROOT_DIR / "outreach_history.txt"
