@@ -8,7 +8,6 @@ from pathlib import Path
 import streamlit as st
 
 from config import settings
-from pages.history import render_history_page
 from pages.settings import render_settings_page
 from pages.templates import render_templates_page
 from services.gmail_service import GmailService
@@ -250,13 +249,11 @@ def main() -> None:
     st.set_page_config(page_title="Recruiter Outreach", page_icon="✉️", layout="wide")
     _initialize_app()
     st.title("Recruiter Outreach")
-    section = st.sidebar.radio("Navigate", ["Compose", "Templates", "History", "Settings"])
+    section = st.sidebar.radio("Navigate", ["Compose", "Templates", "Settings"])
     if section == "Compose":
         render_compose_page()
     elif section == "Templates":
         render_templates_page()
-    elif section == "History":
-        render_history_page()
     else:
         render_settings_page()
 
