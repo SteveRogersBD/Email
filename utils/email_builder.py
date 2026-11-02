@@ -47,7 +47,7 @@ def build_email_message(
     message = EmailMessage()
     message["From"] = sender
     message["To"] = recipient
-    message["Subject"] = subject
+    message["Subject"] = render_text(subject, values)
     message.set_content(rendered_text)
     message.add_alternative(rendered_html, subtype="html")
 
