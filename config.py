@@ -27,6 +27,9 @@ class Settings:
     data_dir: Path = ROOT_DIR / os.getenv("APP_DATA_DIR", "data")
     upload_dir: Path = ROOT_DIR / os.getenv("UPLOAD_DIR", "uploads")
     database_url: str = _database_url()
+    templates_file: Path = ROOT_DIR / "email_templates.txt"
+    settings_file: Path = ROOT_DIR / "app_settings.txt"
+    history_file: Path = ROOT_DIR / "outreach_history.txt"
     google_client_secret_file: Path = ROOT_DIR / os.getenv(
         "GOOGLE_CLIENT_SECRET_FILE", "credentials.json"
     )
