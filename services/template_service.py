@@ -5,13 +5,13 @@ from __future__ import annotations
 from collections.abc import Mapping
 from html import escape
 
-from jinja2 import ChainableUndefined, Environment, StrictUndefined, select_autoescape
+from jinja2 import ChainableUndefined, Environment
 
 
 PLAIN_ENVIRONMENT = Environment(undefined=ChainableUndefined, autoescape=False)
 HTML_ENVIRONMENT = Environment(
     undefined=ChainableUndefined,
-    autoescape=select_autoescape(default_for_string=True),
+    autoescape=False,
 )
 
 
