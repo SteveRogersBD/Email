@@ -8,6 +8,9 @@ credentials.json
 token.json
 data/*.db
 data/*.sqlite3
+app_settings.txt
+email_templates.txt
+outreach_history.txt
 uploads/*
 !uploads/.gitkeep
 !data/.gitkeep
