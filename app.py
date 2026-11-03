@@ -249,13 +249,14 @@ def main() -> None:
     st.set_page_config(page_title="Recruiter Outreach", page_icon="✉️", layout="wide")
     _initialize_app()
     st.title("Recruiter Outreach")
-    section = st.sidebar.radio("Navigate", ["Compose", "Templates", "Settings"])
-    if section == "Compose":
-        render_compose_page()
-    elif section == "Templates":
-        render_templates_page()
-    else:
-        render_settings_page()
+    page = st.navigation(
+        [
+            st.Page(render_compose_page, title="Compose", default=True),
+            st.Page(render_templates_page, title="Templates", url_path="templates"),
+            st.Page(render_settings_page, title="Settings", url_path="settings"),
+        ]
+    )
+    page.run()
 
 
 if __name__ == "__main__":
