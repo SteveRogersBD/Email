@@ -11,6 +11,7 @@ from config import settings
 from pages.settings import render_settings_page
 from pages.templates import render_templates_page
 from services.gmail_service import GmailService
+from services.email_content import render_email_content
 from services.outreach_service import (
     get_setting,
     init_db,
@@ -49,14 +50,6 @@ def _profile_values() -> dict[str, str]:
     signature = get_setting("email_signature")
     if not signature:
         signature = f"Best,\n{full_name}" if full_name else "Best,"
-    links = [
-        ("LinkedIn", get_setting("linkedin_url")),
-        ("GitHub", get_setting("github_url")),
-        ("Portfolio", get_setting("portfolio_url")),
-    ]
-    link_lines = "\n".join(f"{label}: {url}" for label, url in links if url)
-    if link_lines and link_lines not in signature:
-        signature = f"{signature.rstrip()}\n{link_lines}"
     return {
         "full_name": full_name,
         "signature": signature,
@@ -169,8 +162,7 @@ def render_compose_page() -> None:
 
     values = _template_values()
     rendered_subject = render_text(st.session_state.subject, values)
-    rendered_body = render_text(st.session_state.body, values)
-    rendered_html = render_html(st.session_state.body, values)
+    rendered_body, rendered_html = render_email_content(st.session_state.body, values)
     with preview:
         st.write(f"**To:** {st.session_state.recipient_email or '—'}")
         st.write(f"**Subject:** {rendered_subject or '—'}")
@@ -192,7 +184,7 @@ def render_compose_page() -> None:
                 errors.append("Enter a valid recipient email address.")
             if not rendered_subject:
                 errors.append("Subject is required.")
-            if not rendered_body:
+            if not render_text(st.session_state.body, values).strip():
                 errors.append("Body is required.")
             attachment_error = validate_attachment(attachment_path, settings.max_attachment_size_mb)
             if attachment_error:

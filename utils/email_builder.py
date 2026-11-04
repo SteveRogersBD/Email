@@ -8,7 +8,8 @@ from email.message import EmailMessage
 from html import escape
 from pathlib import Path
 
-from services.template_service import render_html, render_text
+from services.template_service import render_text
+from services.email_content import render_email_content
 
 
 URL_PATTERN = re.compile(r"(https?://[^\s<]+)")
@@ -39,10 +40,7 @@ def build_email_message(
 ) -> EmailMessage:
     """Create a plain-text + HTML MIME message, optionally with a PDF resume."""
 
-    rendered_text = render_text(body_template, values)
-    rendered_html = render_html(body_template, values)
-    if "<" not in body_template or ">" not in body_template:
-        rendered_html = build_html_body(rendered_text)
+    rendered_text, rendered_html = render_email_content(body_template, values)
 
     message = EmailMessage()
     message["From"] = sender
