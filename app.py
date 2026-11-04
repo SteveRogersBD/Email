@@ -21,6 +21,7 @@ from services.outreach_service import (
 )
 from services.template_service import render_html, render_text
 from utils.email_builder import build_email_message
+from utils.live_editor import live_text
 from utils.validators import validate_attachment, validate_email
 
 
@@ -37,6 +38,7 @@ def _initialize_app() -> None:
         "template_id": None,
         "attachment_mode": "Default resume",
         "send_in_progress": False,
+        "editor_revision": 0,
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
@@ -106,6 +108,7 @@ def render_compose_page() -> None:
         format_func=lambda value: template_options[value].name,
     )
     if selected_id != st.session_state.template_id:
+        st.session_state.editor_revision += 1
         st.session_state.template_id = selected_id
         selected = template_options[selected_id]
         st.session_state.subject = selected.subject
@@ -123,9 +126,20 @@ def render_compose_page() -> None:
         st.text_input("Company", key="company")
         st.text_input("Job title", key="job_title")
 
-    st.subheader("Email content")
-    st.text_input("Subject *", key="subject")
-    st.text_area("Body *", key="body", height=280, help="Jinja variables are supported. Missing optional values are safe.")
+    editor_column, preview_column = st.columns(2, gap="large")
+    with editor_column:
+        st.subheader("Email content")
+        st.caption("Preview updates as you type. Template variables are supported.")
+        revision = st.session_state.editor_revision
+        st.session_state.subject = live_text(
+            "Subject *", st.session_state.subject, key=f"subject_editor_{revision}"
+        )
+        st.session_state.body = live_text(
+            "Body *", st.session_state.body, key=f"body_editor_{revision}", multiline=True
+        )
+    with preview_column:
+        st.subheader("Live preview")
+        preview = st.container(border=True)
 
     st.subheader("Resume attachment")
     attachment_mode = st.radio(
@@ -148,17 +162,15 @@ def render_compose_page() -> None:
     rendered_subject = render_text(st.session_state.subject, values)
     rendered_body = render_text(st.session_state.body, values)
     rendered_html = render_html(st.session_state.body, values)
-    st.subheader("Preview")
-    st.write(f"**To:** {st.session_state.recipient_email or '—'}")
-    st.write(f"**Subject:** {rendered_subject or '—'}")
-    if rendered_html:
-        st.markdown(rendered_html, unsafe_allow_html=True)
-    else:
-        st.info("Enter a body to preview it.")
-    if attachment_path:
-        st.caption(f"Attachment: {attachment_path.name}")
-    else:
-        st.caption("Attachment: none")
+    with preview:
+        st.write(f"**To:** {st.session_state.recipient_email or '—'}")
+        st.write(f"**Subject:** {rendered_subject or '—'}")
+        st.divider()
+        if rendered_html:
+            st.markdown(rendered_html, unsafe_allow_html=True)
+        else:
+            st.info("Enter a body to preview it.")
+        st.caption(f"Attachment: {attachment_path.name if attachment_path else 'none'}")
 
     if st.session_state.recipient_email and was_contacted(st.session_state.recipient_email):
         st.warning("This recipient has a previously confirmed sent message in your history.")
