@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><style>
+body { margin:0; font:14px sans-serif; color:var(--text,#31333f); }
+label { display:block; margin-bottom:8px; }
+input,textarea { box-sizing:border-box; width:100%; border:1px solid transparent;
+  border-radius:8px; background:var(--secondary,#f0f2f6); color:inherit;
+  padding:12px; font:16px/1.5 sans-serif; outline:none; }
+input:focus,textarea:focus { border-color:var(--primary,#ff4b4b); }
+textarea { height:340px; resize:vertical; }
+</style></head>
+<body><label id="label" for="editor"></label><div id="holder"></div>
+<script>
+const send = (type, extra={}) => parent.postMessage({isStreamlitMessage:true,type,...extra}, '*');
+let editor, timer, lastSent, initial;
+function report() {
+  lastSent = editor.value;
+  send('streamlit:setComponentValue', {value:lastSent,dataType:'json'});
+}
+window.addEventListener('message', event => {
+  if (event.data.type !== 'streamlit:render') return;
+  const {args,theme} = event.data;
+  if (theme) {
+    document.body.style.setProperty('--text',theme.textColor);
+    document.body.style.setProperty('--secondary',theme.secondaryBackgroundColor);
+    document.body.style.setProperty('--primary',theme.primaryColor);
+  }
+  document.getElementById('label').textContent = args.label;
+  if (!editor) {
+    editor = document.createElement(args.multiline ? 'textarea' : 'input');
+    editor.id = 'editor';
+    editor.value = args.value;
+    initial = lastSent = args.value;
+    document.getElementById('holder').appendChild(editor);
+    editor.addEventListener('input', () => { clearTimeout(timer); timer=setTimeout(report,200); });
+    editor.addEventListener('blur', () => { clearTimeout(timer); if(editor.value!==lastSent) report(); });
+    new ResizeObserver(() => send('streamlit:setFrameHeight',{height:document.body.scrollHeight+8})).observe(editor);
+  } else if (args.value !== lastSent && args.value !== initial && document.activeElement !== editor) {
+    editor.value = initial = lastSent = args.value;
+  }
+  send('streamlit:setFrameHeight',{height:document.body.scrollHeight+8});
+});
+send('streamlit:componentReady',{apiVersion:1});
+</script></body></html>
