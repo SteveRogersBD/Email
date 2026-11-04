@@ -195,10 +195,10 @@ def render_compose_page() -> None:
                 return
 
             gmail = GmailService()
-            sender = gmail.connected_email()
-            if not sender:
+            if not gmail.is_connected():
                 st.error("Connect Gmail in Settings before sending.")
                 return
+            sender = gmail.connected_email() or ""
             message = build_email_message(
                 sender=sender,
                 recipient=st.session_state.recipient_email.strip(),

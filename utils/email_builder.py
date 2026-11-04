@@ -43,7 +43,10 @@ def build_email_message(
     rendered_text, rendered_html = render_email_content(body_template, values)
 
     message = EmailMessage()
-    message["From"] = sender
+    # With send-only OAuth Google may not disclose the account address.
+    # Gmail supplies the authenticated account's From header when omitted.
+    if sender:
+        message["From"] = sender
     message["To"] = recipient
     message["Subject"] = render_text(subject, values)
     message.set_content(rendered_text)

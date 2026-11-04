@@ -24,9 +24,14 @@ def render_settings_page() -> None:
     st.header("Settings")
     st.subheader("Gmail connection")
     gmail = GmailService()
-    connected_email = gmail.connected_email()
-    if connected_email:
-        st.success(f"Connected as {connected_email}")
+    try:
+        connected = gmail.is_connected()
+    except Exception:
+        connected = False
+        st.error("Saved Gmail authorization could not be refreshed. Connect Gmail again to renew access.")
+    if connected:
+        connected_email = gmail.connected_email()
+        st.success(f"Connected as {connected_email}" if connected_email else "Gmail connected. Emails will be sent from the Google account you authorized.")
         if st.button("Disconnect Gmail"):
             gmail.disconnect()
             st.success("Gmail disconnected. Your local token was removed.")
@@ -35,7 +40,8 @@ def render_settings_page() -> None:
         st.info("Connect Gmail to send. OAuth opens in your browser and never asks this app for your Gmail password.")
         if st.button("Connect Gmail", type="primary"):
             try:
-                gmail.authenticate()
+                with st.spinner("Complete Google sign-in in the browser window that opened. Waiting up to 2 minutes…"):
+                    gmail.authenticate()
                 st.success("Gmail connected.")
                 st.rerun()
             except Exception as exc:
