@@ -4,13 +4,25 @@ from __future__ import annotations
 
 import streamlit as st
 
-from services.outreach_service import delete_template, list_templates, upsert_template
+from services.outreach_service import delete_template, get_setting, list_templates, upsert_template
 from services.template_service import validate_template_syntax
 
 
 def render_templates_page() -> None:
     st.header("Email templates")
     st.caption("Create reusable messages with Jinja variables such as {{ recipient_name }} and {{ company }}.")
+    st.info("Your saved signature and profile links are added to every email automatically. Manage them in Settings → Profile and links.")
+    saved_links = [
+        label for label, key in (
+            ("LinkedIn", "linkedin_url"),
+            ("GitHub", "github_url"),
+            ("Portfolio", "portfolio_url"),
+        ) if get_setting(key).strip()
+    ]
+    st.caption(
+        "Links added automatically: " + ", ".join(saved_links)
+        if saved_links else "No profile links saved yet. Add them once in Settings."
+    )
 
     templates = list_templates()
     choices = {template.id: template.name for template in templates}
@@ -31,11 +43,6 @@ def render_templates_page() -> None:
         name = st.text_input("Template name", value=initial[0])
         subject = st.text_input("Subject", value=initial[1])
         body = st.text_area("Body", value=initial[2], height=260)
-        default_links = st.text_input(
-            "Default link variables",
-            value=initial[3],
-            help="Comma-separated setting names, for example linkedin_url,github_url.",
-        )
         submitted = st.form_submit_button("Save template", type="primary")
 
     if submitted:
@@ -45,7 +52,7 @@ def render_templates_page() -> None:
             st.error(f"Template syntax error: {syntax_error}")
         else:
             try:
-                upsert_template(name.strip(), subject.strip(), body, default_links.strip(), selected_id)
+                upsert_template(name.strip(), subject.strip(), body, initial[3], selected_id)
                 st.success("Template saved.")
                 st.rerun()
             except Exception as exc:
