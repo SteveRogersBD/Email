@@ -20,7 +20,7 @@ from services.outreach_service import (
     seed_starter_templates,
     was_contacted,
 )
-from services.template_service import render_html, render_text
+from services.template_service import render_text
 from utils.email_builder import build_email_message
 from utils.live_editor import live_text
 from utils.validators import validate_attachment, validate_email

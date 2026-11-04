@@ -43,13 +43,14 @@ def render_settings_page() -> None:
 
     st.divider()
     st.subheader("Profile and links")
+    st.caption("Save these once. Your signature and filled-in links are added to every email automatically and shown in the live preview.")
     with st.form("profile_settings"):
         full_name = st.text_input("Full name", value=get_setting(SETTING_KEYS["full_name"]))
         signature = st.text_area(
             "Email signature",
             value=get_setting(SETTING_KEYS["signature"]),
             height=120,
-            help="Use plain text here. URLs will be clickable in HTML emails.",
+            help="Automatically added to every email. Existing {{ signature }} placeholders still work without adding it twice.",
         )
         linkedin_url = st.text_input("LinkedIn URL", value=get_setting(SETTING_KEYS["linkedin_url"]))
         github_url = st.text_input("GitHub URL", value=get_setting(SETTING_KEYS["github_url"]))
