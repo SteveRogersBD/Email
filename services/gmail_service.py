@@ -29,35 +29,43 @@ class GmailService:
             return None
         return Credentials.from_authorized_user_file(str(self.token_file), SCOPES)
 
-    def authenticate(self) -> Credentials:
+    def authenticate(self, *, interactive: bool = True) -> Credentials:
         credentials = self._load_credentials()
         if credentials and credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
             self.token_file.write_text(credentials.to_json(), encoding="utf-8")
         elif not credentials or not credentials.valid:
+            if not interactive:
+                raise RuntimeError("Gmail authorization is missing or expired. Connect Gmail in Settings.")
             if not self.client_secret_file.exists():
                 raise FileNotFoundError(
                     f"Google OAuth client file not found at {self.client_secret_file}. "
                     "Download a Desktop OAuth client JSON and place it there."
                 )
             flow = InstalledAppFlow.from_client_secrets_file(str(self.client_secret_file), SCOPES)
-            credentials = flow.run_local_server(port=0, access_type="offline", prompt="consent")
+            credentials = flow.run_local_server(
+                port=0, access_type="offline", prompt="consent", timeout_seconds=120,
+                authorization_prompt_message="Complete Gmail authorization in the browser window that opened.",
+            )
             self.token_file.write_text(credentials.to_json(), encoding="utf-8")
         return credentials
 
     def build_client(self) -> Resource:
-        credentials = self.authenticate()
+        credentials = self.authenticate(interactive=False)
         return build("gmail", "v1", credentials=credentials, cache_discovery=False)
 
-    def connected_email(self) -> str | None:
+    def is_connected(self) -> bool:
+        """Check saved authorization without calling a read-only Gmail endpoint."""
         if not self.token_file.exists():
+            return False
+        return self.authenticate(interactive=False).valid
+
+    def connected_email(self) -> str | None:
+        """Return the account only when Google included it in the saved token."""
+        credentials = self._load_credentials()
+        if credentials is None:
             return None
-        try:
-            client = self.build_client()
-            profile = client.users().getProfile(userId="me").execute()
-            return profile.get("emailAddress")
-        except Exception:
-            return None
+        return credentials.account or None
 
     def send_message(self, message: EmailMessage) -> str:
         client = self.build_client()
