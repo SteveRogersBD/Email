@@ -118,13 +118,22 @@ def render_compose_page() -> None:
         st.session_state.body = template_options[selected_id].body
 
     st.subheader("Recipient")
+    revision = st.session_state.editor_revision
     first, second = st.columns(2)
     with first:
-        st.text_input("Recruiter email *", key="recipient_email", placeholder="recruiter@example.com")
-        st.text_input("Recruiter name", key="recipient_name")
+        st.session_state.recipient_email = live_text(
+            "Recruiter email *", st.session_state.recipient_email, key=f"email_editor_{revision}"
+        )
+        st.session_state.recipient_name = live_text(
+            "Recruiter name", st.session_state.recipient_name, key=f"name_editor_{revision}"
+        )
     with second:
-        st.text_input("Company", key="company")
-        st.text_input("Job title", key="job_title")
+        st.session_state.company = live_text(
+            "Company", st.session_state.company, key=f"company_editor_{revision}"
+        )
+        st.session_state.job_title = live_text(
+            "Job title", st.session_state.job_title, key=f"job_editor_{revision}"
+        )
 
     editor_column, preview_column = st.columns(2, gap="large")
     with editor_column:
@@ -223,6 +232,7 @@ def render_compose_page() -> None:
             st.session_state.recipient_name = ""
             st.session_state.company = ""
             st.session_state.job_title = ""
+            st.session_state.editor_revision += 1
             st.session_state.flash_success = f"Email sent successfully. Gmail message ID: {gmail_message_id}"
             st.rerun()
         except TimeoutError as exc:
